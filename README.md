@@ -88,3 +88,7 @@ The workflow sends the test report by email after every run (passing or failing)
 - GitHub repository URL: <repository-url>
 - Setup instructions: see above.
 - Evidence: pipeline runs for passing, failing and corrected demonstrations, plus the automatically updated `test-report.json`.
+
+## Status
+
+Initial submission portal implementation.
