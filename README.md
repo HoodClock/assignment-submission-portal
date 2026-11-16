@@ -92,3 +92,7 @@ The workflow sends the test report by email after every run (passing or failing)
 ## Status
 
 Initial submission portal implementation.
+
+## Status
+
+Second submission portal implementation.
