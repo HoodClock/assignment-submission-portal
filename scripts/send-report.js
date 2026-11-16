@@ -48,16 +48,28 @@ async function main() {
     tests,
   };
 
-  const res = await fetch(`${receiverUrl.replace(/\/$/, '')}/report`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Bypass-Tunnel-Reminder': 'true' },
-    body: JSON.stringify(report),
-  });
-  if (!res.ok) {
-    console.error(`Failed to deliver test report to receiver: ${res.status}`);
-    process.exit(1);
+  const url = `${receiverUrl.replace(/\/$/, '')}/report`;
+  const body = JSON.stringify(report);
+  const maxAttempts = 3;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Bypass-Tunnel-Reminder': 'true' },
+        body,
+      });
+      if (res.ok) {
+        console.log('Test report delivered to local receiver');
+        return;
+      }
+      console.error(`Delivery attempt ${attempt}/${maxAttempts} failed with status ${res.status}`);
+    } catch (err) {
+      console.error(`Delivery attempt ${attempt}/${maxAttempts} failed: ${err.message}`);
+    }
+    if (attempt < maxAttempts) await new Promise((r) => setTimeout(r, 3000));
   }
-  console.log('Test report delivered to local receiver');
+  console.error('Failed to deliver test report to receiver after all attempts');
+  process.exit(1);
 }
 
 main();
