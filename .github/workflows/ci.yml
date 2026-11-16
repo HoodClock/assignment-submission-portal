@@ -28,7 +28,7 @@ jobs:
         run: npm ci
 
       - name: Run automated tests and generate JSON report
-        run: npm test -- --json > test-results.json
+        run: npx jest --json > test-results.json
 
       - name: Send test report to local receiver
         if: always()
