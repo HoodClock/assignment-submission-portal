@@ -50,7 +50,7 @@ async function main() {
 
   const res = await fetch(`${receiverUrl.replace(/\/$/, '')}/report`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'Bypass-Tunnel-Reminder': 'true' },
     body: JSON.stringify(report),
   });
   if (!res.ok) {
