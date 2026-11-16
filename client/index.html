@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assignment Submission Portal</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f6f8; color: #222; margin: 0; padding: 24px; }
+    .container { max-width: 760px; margin: 0 auto; background: #fff; border-radius: 10px; padding: 28px; box-shadow: 0 2px 10px rgba(0,0,0,.08); }
+    h1 { margin-top: 0; font-size: 24px; }
+    form { display: grid; gap: 14px; }
+    label { font-weight: bold; font-size: 14px; display: grid; gap: 6px; }
+    input, textarea, input[type="url"] { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+    button { padding: 12px; background: #2563eb; color: #fff; border: none; border-radius: 6px; font-size: 15px; cursor: pointer; }
+    button:hover { background: #1d4ed8; }
+    .error { color: #dc2626; font-size: 13px; }
+    .success { color: #16a34a; font-size: 14px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 14px; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; word-break: break-all; }
+    th { background: #f9fafb; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Assignment Submission Portal</h1>
+    <form id="submission-form">
+      <label>Name
+        <input id="name" name="name" type="text" placeholder="Student name" />
+      </label>
+      <label>Registration Number
+        <input id="registrationNumber" name="registrationNumber" type="text" placeholder="e.g. REG-2026-001" />
+      </label>
+      <label>Assignment Title
+        <input id="assignmentTitle" name="assignmentTitle" type="text" placeholder="e.g. Data Structures Homework" />
+      </label>
+      <label>Submission URL
+        <input id="submissionUrl" name="submissionUrl" type="url" placeholder="https://example.com/my-submission" />
+      </label>
+      <button type="submit">Submit Assignment</button>
+      <div id="form-message" class="success"></div>
+    </form>
+    <h2>Saved Submissions</h2>
+    <div id="submissions-status">Loading submissions...</div>
+    <table id="submissions-table" style="display:none;">
+      <thead>
+        <tr><th>Name</th><th>Registration</th><th>Assignment</th><th>Submission URL</th><th>Submitted At</th></tr>
+      </thead>
+      <tbody id="submissions-body"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const form = document.getElementById('submission-form');
+    const formMessage = document.getElementById('form-message');
+    const submissionsStatus = document.getElementById('submissions-status');
+    const submissionsBody = document.getElementById('submissions-body');
+    const submissionsTable = document.getElementById('submissions-table');
+
+    async function loadSubmissions() {
+      const res = await fetch('/api/submissions');
+      const submissions = await res.json();
+      if (!Array.isArray(submissions) || submissions.length === 0) {
+        submissionsStatus.textContent = 'No submissions yet.';
+        submissionsTable.style.display = 'none';
+        return;
+      }
+      submissionsStatus.textContent = '';
+      submissionsTable.style.display = 'table';
+      submissionsBody.innerHTML = submissions.map((s) => (
+        `<tr>
+          <td>${s.name}</td>
+          <td>${s.registrationNumber}</td>
+          <td>${s.assignmentTitle}</td>
+          <td><a href="${s.submissionUrl}" target="_blank" rel="noopener noreferrer">${s.submissionUrl}</a></td>
+          <td>${s.submittedAt}</td>
+        </tr>`
+      )).join('');
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      formMessage.textContent = '';
+      const payload = {
+        name: document.getElementById('name').value.trim(),
+        registrationNumber: document.getElementById('registrationNumber').value.trim(),
+        assignmentTitle: document.getElementById('assignmentTitle').value.trim(),
+        submissionUrl: document.getElementById('submissionUrl').value.trim(),
+      };
+      const res = await fetch('/api/submissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        formMessage.textContent = 'Submission saved successfully.';
+        form.reset();
+        await loadSubmissions();
+      } else {
+        const errors = data.errors || {};
+        const messages = Object.values(errors).join(' ');
+        formMessage.textContent = messages || 'Submission rejected.';
+        formMessage.className = 'error';
+      }
+    });
+
+    loadSubmissions();
+  </script>
+</body>
+</html>
