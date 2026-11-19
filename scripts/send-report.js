@@ -17,8 +17,8 @@ function flattenTests(jestResults) {
 async function main() {
   const receiverUrl = process.env.REPORT_RECEIVER_URL;
   if (!receiverUrl) {
-    console.error('REPORT_RECEIVER_URL is not configured');
-    process.exit(1);
+    console.warn('Skipping local report delivery: REPORT_RECEIVER_URL is not configured');
+    return;
   }
   const resultsPath = process.env.JEST_RESULTS_FILE || 'test-results.json';
   const jestResults = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
@@ -68,8 +68,7 @@ async function main() {
     }
     if (attempt < maxAttempts) await new Promise((r) => setTimeout(r, 3000));
   }
-  console.error('Failed to deliver test report to receiver after all attempts');
-  process.exit(1);
+  console.warn('Could not deliver test report to the local receiver after all attempts (receiver/tunnel likely offline). Continuing without failing the pipeline.');
 }
 
 main();

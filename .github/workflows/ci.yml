@@ -32,16 +32,18 @@ jobs:
 
       - name: Send test report to local receiver
         if: always()
+        continue-on-error: true
         run: node scripts/send-report.js
         env:
           REPORT_RECEIVER_URL: ${{ secrets.LOCAL_REPORT_RECEIVER_URL }}
 
       - name: Send test report by email
         if: always()
+        continue-on-error: true
         run: node scripts/send-report-email.js
         env:
-          MAILGUN_API_KEY: ${{ secrets.MAILGUN_API_KEY }}
-          MAILGUN_DOMAIN: ${{ secrets.MAILGUN_DOMAIN }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          REPORT_EMAIL_FROM: ${{ secrets.REPORT_EMAIL_FROM }}
           REPORT_EMAIL_TO: ${{ secrets.REPORT_EMAIL_TO }}
 
       - name: Upload test report artifact

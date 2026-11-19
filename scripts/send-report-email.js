@@ -15,11 +15,11 @@ function flattenTests(jestResults) {
 }
 
 async function main() {
-  const apiKey = process.env.MAILGUN_API_KEY;
-  const domain = process.env.MAILGUN_DOMAIN;
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.REPORT_EMAIL_FROM || 'onboarding@resend.dev';
   const to = process.env.REPORT_EMAIL_TO;
-  if (!apiKey || !domain || !to) {
-    console.log('Email report skipped: MAILGUN_API_KEY, MAILGUN_DOMAIN or REPORT_EMAIL_TO is not configured');
+  if (!apiKey || !to) {
+    console.log('Email report skipped: RESEND_API_KEY or REPORT_EMAIL_TO is not configured');
     return;
   }
   const resultsPath = process.env.JEST_RESULTS_FILE || 'test-results.json';
@@ -44,15 +44,15 @@ async function main() {
     ...tests.map((t) => `- ${t.status.toUpperCase()}: ${t.name}` + (t.failureMessage ? `\n  Failure: ${t.failureMessage}` : '')),
   ];
 
-  const res = await fetch(`https://api.mailgun.net/v3/${domain}/messages`, {
+  const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      Authorization: `Basic ${Buffer.from(`api:${apiKey}`).toString('base64')}`,
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
     },
-    body: new URLSearchParams({
-      from: `CI <noreply@${domain}>`,
-      to,
+    body: JSON.stringify({
+      from,
+      to: [to],
       subject: `Assignment Portal Test Report: ${status.toUpperCase()}`,
       text: lines.join('\n'),
     }),
