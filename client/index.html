@@ -146,8 +146,11 @@
       formMessage.className = `message show ${type}`;
     }
 
+    const API_BASE_URL = (window.SUBMISSIONS_API_BASE_URL || 'https://hoodclock-assignment-portal-api.onrender.com').replace(/\/$/, '');
+    const submissionsApiUrl = `${API_BASE_URL}/api/submissions`;
+
     async function loadSubmissions() {
-      const res = await fetch('/api/submissions');
+      const res = await fetch(submissionsApiUrl);
       const submissions = await res.json();
       if (!Array.isArray(submissions) || submissions.length === 0) {
         submissionsStatus.style.display = 'block';
@@ -179,7 +182,7 @@
         submissionUrl: document.getElementById('submissionUrl').value.trim(),
       };
       try {
-        const res = await fetch('/api/submissions', {
+        const res = await fetch(submissionsApiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),

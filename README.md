@@ -63,11 +63,20 @@ npx localtunnel --port 8787   # terminal 2: gives a public URL forwarding to loc
 
 Set the repository secret `LOCAL_REPORT_RECEIVER_URL` to the tunnel URL (for example `https://pretty-rats-post.loca.lt`) so the GitHub runner can reach the local receiver.
 
-## Deployment (GitHub Pages, bonus)
+## Deployment (GitHub Pages frontend + hosted API backend)
 
-The `deploy` job in the CI workflow runs only when the `test` job succeeded and only for pushes to `main`. It publishes the static frontend from `client/` to GitHub Pages. A failing test run skips deployment, leaving the previously published version unchanged.
+The portal has two parts, and they must be deployed separately:
 
-Enable GitHub Pages for the repository (Settings -> Pages -> Source: GitHub Actions), then push to `main` with passing tests to publish.
+- **Frontend**: static `client/index.html` published to **GitHub Pages** via the `deploy` job in the CI workflow (Settings -> Pages -> Source: GitHub Actions, push to `main` with passing tests).
+- **Backend**: the Express API (`server/index.js`) with `POST /api/submissions` and `GET /api/submissions`. GitHub Pages is static hosting only and can never serve API POSTs, which is why submissions used to fail with `405 Method Not Allowed`.
+
+The backend is configured for deployment on [Render](https://render.com) via `render.yaml` (free tier). After pushing this change:
+
+1. Push to `main` (or trigger a Render deploy from the repo blueprint).
+2. The API is live at `https://hoodclock-assignment-portal-api.onrender.com`.
+3. The frontend in `client/index.html` calls that backend base URL (`window.SUBMISSIONS_API_BASE_URL` can override it, e.g. set it to `http://localhost:3000` for local development).
+
+The frontend form therefore posts to `<API_BASE_URL>/api/submissions` instead of the relative `/api/submissions` that GitHub Pages could not handle.
 
 ## Email report (bonus)
 
